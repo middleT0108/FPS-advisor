@@ -4,9 +4,20 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw, CheckCircle2, ShieldAlert, ArrowRight, Copy, Check } from "lucide-react";
 
+// Ký tự dễ đọc, không nhầm lẫn
+const CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+function generateInstantCode(): string {
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
+  }
+  return result;
+}
+
 export default function LinkPage() {
   const router = useRouter();
-  const [code, setCode] = useState<string | null>(null);
+  const [code, setCode] = useState<string>(() => generateInstantCode());
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<"PENDING" | "LINKED" | "EXPIRED">("PENDING");
@@ -21,22 +32,26 @@ export default function LinkPage() {
     setStatus("PENDING");
     setProfileId(null);
     setProfilePreview(null);
+    const instant = generateInstantCode();
+    setCode(instant);
+    localStorage.setItem("current_link_code", instant);
+
     try {
       const res = await fetch("/api/link/create", { method: "POST" });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.data.code) {
         setCode(data.data.code);
-        // Lưu tạm vào localStorage để các trang khác có thể tham chiếu profileId sau này
         localStorage.setItem("current_link_code", data.data.code);
       }
     } catch (err) {
-      console.error("Lỗi tạo mã:", err);
+      // Dù API chậm hoặc offline, mã instant vẫn hoạt động 100% nhờ auto-create trên submit
+      console.warn("Dùng mã tức thì:", instant);
     } finally {
       setLoading(false);
     }
   }
 
-  // Tự động sinh mã khi vào trang lần đầu
+  // Tự động kiểm tra/tạo mã khi vào trang
   useEffect(() => {
     generateNewCode();
   }, []);

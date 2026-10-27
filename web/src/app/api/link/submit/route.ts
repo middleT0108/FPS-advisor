@@ -25,16 +25,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Kiểm tra session mã liên kết
-    const session = await prisma.linkSession.findUnique({
+    // Kiểm tra hoặc tự động tạo session mã liên kết
+    let session = await prisma.linkSession.findUnique({
       where: { code },
     });
 
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: "Mã liên kết không tồn tại" },
-        { status: 404 }
-      );
+      session = await prisma.linkSession.create({
+        data: {
+          code,
+          status: "PENDING",
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        },
+      });
     }
 
     if (new Date() > session.expiresAt) {

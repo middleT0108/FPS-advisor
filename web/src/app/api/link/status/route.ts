@@ -30,10 +30,16 @@ export async function GET(request: NextRequest) {
     });
 
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: "Không tìm thấy mã liên kết này" },
-        { status: 404 }
-      );
+      return NextResponse.json({
+        success: true,
+        data: {
+          code,
+          status: "PENDING",
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          systemProfileId: null,
+          preview: null,
+        },
+      });
     }
 
     // Kiểm tra hết hạn
