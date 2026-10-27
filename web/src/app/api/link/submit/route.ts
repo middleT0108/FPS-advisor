@@ -25,110 +25,112 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Kiểm tra hoặc tự động tạo session mã liên kết
-    let session = await prisma.linkSession.findUnique({
+    // 1. Kiểm tra session hiện tại
+    const existingSession = await prisma.linkSession.findUnique({
       where: { code },
     });
 
-    if (!session) {
-      session = await prisma.linkSession.create({
-        data: {
-          code,
-          status: "PENDING",
-          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        },
-      });
-    }
-
-    if (new Date() > session.expiresAt) {
-      await prisma.linkSession.update({
-        where: { id: session.id },
-        data: { status: "EXPIRED" },
-      });
-      return NextResponse.json(
-        { success: false, error: "Mã liên kết đã hết hạn (quá 15 phút)" },
-        { status: 410 }
-      );
+    // 2. Nếu đã có profile cũ liên kết với mã này, ngắt liên kết trước để tránh cascade delete
+    if (existingSession?.systemProfileId) {
+      const oldProfileId = existingSession.systemProfileId;
+      try {
+        await prisma.linkSession.update({
+          where: { id: existingSession.id },
+          data: { systemProfileId: null },
+        });
+        await prisma.systemProfile.delete({
+          where: { id: oldProfileId },
+        });
+      } catch {
+        // Bỏ qua lỗi dọn dẹp nếu profile cũ không tồn tại
+      }
     }
 
     const { system, benchmark, actualFpsRecords } = body;
 
-    // 1. Tạo SystemProfile
+    const cpu = system?.cpu || ({} as any);
+    const gpu = system?.gpu || ({} as any);
+    const ram = system?.ram || ({} as any);
+    const storage = system?.storage || ({} as any);
+    const display = system?.display || ({} as any);
+    const os = system?.os || ({} as any);
+
+    // 3. Tạo SystemProfile mới với giá trị an toàn
     const profile = await prisma.systemProfile.create({
       data: {
-        cpuName: system.cpu.name || "Unknown CPU",
-        cpuCores: system.cpu.cores || 4,
-        cpuThreads: system.cpu.threads || 8,
-        cpuBaseClockMhz: system.cpu.baseClockMhz || 3000,
-        cpuBoostClockMhz: system.cpu.boostClockMhz || 4000,
-        cpuCacheL3Mb: system.cpu.cacheL3Mb || 16.0,
+        cpuName: String(cpu.name || "Unknown CPU"),
+        cpuCores: Number(cpu.cores) || 4,
+        cpuThreads: Number(cpu.threads) || 8,
+        cpuBaseClockMhz: Math.round(Number(cpu.baseClockMhz)) || 3000,
+        cpuBoostClockMhz: Math.round(Number(cpu.boostClockMhz)) || 4000,
+        cpuCacheL3Mb: Number(cpu.cacheL3Mb) || 16.0,
 
-        gpuName: system.gpu.name || "Integrated Graphics",
-        gpuVendor: system.gpu.vendor || "UNKNOWN",
-        gpuVramMb: system.gpu.vramMb || 2048,
-        gpuDriverVersion: system.gpu.driverVersion || "Standard",
-        gpuClockMhz: system.gpu.clockMhz || 1000,
+        gpuName: String(gpu.name || "Integrated Graphics"),
+        gpuVendor: String(gpu.vendor || "UNKNOWN"),
+        gpuVramMb: Math.round(Number(gpu.vramMb)) || 2048,
+        gpuDriverVersion: String(gpu.driverVersion || "Standard"),
+        gpuClockMhz: Math.round(Number(gpu.clockMhz)) || 1000,
 
-        ramTotalGb: system.ram.totalGb || 8.0,
-        ramSpeedMhz: system.ram.speedMhz || 2666,
-        ramChannels: system.ram.channels || 1,
-        ramXmpEnabled: system.ram.xmpEnabled || false,
+        ramTotalGb: Number(ram.totalGb) || 8.0,
+        ramSpeedMhz: Math.round(Number(ram.speedMhz)) || 2666,
+        ramChannels: Math.round(Number(ram.channels)) || 1,
+        ramXmpEnabled: Boolean(ram.xmpEnabled),
 
-        diskModel: system.storage?.model || "Standard Storage",
-        diskType: system.storage?.type || "SSD",
-        displayResolution: system.display?.resolution || "1920x1080",
-        displayRefreshRate: system.display?.refreshRate || 60,
+        diskModel: String(storage.model || "Standard Storage"),
+        diskType: String(storage.type || "SSD"),
+        displayResolution: String(display.resolution || "1920x1080"),
+        displayRefreshRate: Math.round(Number(display.refreshRate)) || 60,
 
-        osName: system.os?.name || "Windows 11",
-        osVersion: system.os?.version || "Unknown",
-        powerPlan: system.os?.powerPlan || "Balanced",
-        gameModeEnabled: system.os?.gameModeEnabled || false,
-        hagsEnabled: system.os?.hagsEnabled || false,
+        osName: String(os.name || "Windows 11"),
+        osVersion: String(os.version || "Unknown"),
+        powerPlan: String(os.powerPlan || "Balanced"),
+        gameModeEnabled: Boolean(os.gameModeEnabled),
+        hagsEnabled: Boolean(os.hagsEnabled),
       },
     });
 
-    // 2. Lưu Benchmark nếu có
+    // 4. Lưu Benchmark nếu có
     if (benchmark) {
       await prisma.benchmarkResult.create({
         data: {
           systemProfileId: profile.id,
-          cpuSingleScore: benchmark.cpuSingleScore || 1000,
-          cpuMultiScore: benchmark.cpuMultiScore || 5000,
-          gpuScore: benchmark.gpuScore || 4000,
-          ramBandwidthMbPerSec: benchmark.ramBandwidthMbPerSec || 25000,
-          diskReadMbPerSec: benchmark.diskReadMbPerSec || 1500,
-          diskWriteMbPerSec: benchmark.diskWriteMbPerSec || 1000,
-          maxCpuTempC: benchmark.maxCpuTempC || 60,
-          maxGpuTempC: benchmark.maxGpuTempC || 60,
-          cpuThermalThrottled: benchmark.cpuThermalThrottled || false,
-          gpuThermalThrottled: benchmark.gpuThermalThrottled || false,
-          bottleneckRatio: benchmark.bottleneckRatio || 1.0,
+          cpuSingleScore: Math.round(Number(benchmark.cpuSingleScore)) || 1000,
+          cpuMultiScore: Math.round(Number(benchmark.cpuMultiScore)) || 5000,
+          gpuScore: Math.round(Number(benchmark.gpuScore)) || 4000,
+          ramBandwidthMbPerSec: Number(benchmark.ramBandwidthMbPerSec) || 25000,
+          diskReadMbPerSec: Number(benchmark.diskReadMbPerSec) || 1500,
+          diskWriteMbPerSec: Number(benchmark.diskWriteMbPerSec) || 1000,
+          maxCpuTempC: Number(benchmark.maxCpuTempC) || 60,
+          maxGpuTempC: Number(benchmark.maxGpuTempC) || 60,
+          cpuThermalThrottled: Boolean(benchmark.cpuThermalThrottled),
+          gpuThermalThrottled: Boolean(benchmark.gpuThermalThrottled),
+          bottleneckRatio: Number(benchmark.bottleneckRatio) || 1.0,
         },
       });
     }
 
-    // 3. Lưu Actual FPS Records từ PresentMon nếu có
+    // 5. Lưu Actual FPS Records từ PresentMon nếu có
     if (actualFpsRecords && actualFpsRecords.length > 0) {
       for (const rec of actualFpsRecords) {
         await prisma.fpsRecord.create({
           data: {
             systemProfileId: profile.id,
-            gameKey: rec.gameKey.toLowerCase(),
-            resolution: rec.resolution,
-            graphicPreset: rec.graphicPreset,
+            gameKey: String(rec.gameKey || "unknown").toLowerCase(),
+            resolution: String(rec.resolution || "1080p"),
+            graphicPreset: String(rec.graphicPreset || "High"),
             source: "ACTUAL_PRESENTMON",
-            avgFps: rec.avgFps,
-            low1PercentFps: rec.low1PercentFps,
-            low01PercentFps: rec.low01PercentFps || null,
-            frametimeMs: rec.frametimeMs,
-            durationSeconds: rec.durationSeconds,
-            bottleneckType: rec.bottleneckType || "BALANCED",
+            avgFps: Number(rec.avgFps) || 60,
+            low1PercentFps: Number(rec.low1PercentFps) || 30,
+            low01PercentFps: rec.low01PercentFps ? Number(rec.low01PercentFps) : null,
+            frametimeMs: Number(rec.frametimeMs) || 16.6,
+            durationSeconds: Math.round(Number(rec.durationSeconds)) || 60,
+            bottleneckType: String(rec.bottleneckType || "BALANCED"),
           },
         });
       }
     }
 
-    // 4. Chạy Rule Engine tự động để tạo khuyến nghị
+    // 6. Chạy Rule Engine tự động để tạo khuyến nghị
     const recommendations = evaluateSystemRecommendations(
       system,
       benchmark,
@@ -157,11 +159,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 5. Cập nhật LinkSession liên kết thành công
-    await prisma.linkSession.update({
-      where: { id: session.id },
-      data: {
+    // 7. Cập nhật hoặc tạo mới LinkSession với profile vừa tạo
+    await prisma.linkSession.upsert({
+      where: { code },
+      update: {
         status: "LINKED",
+        linkedAt: new Date(),
+        systemProfileId: profile.id,
+      },
+      create: {
+        code,
+        status: "LINKED",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
         linkedAt: new Date(),
         systemProfileId: profile.id,
       },
@@ -175,10 +184,13 @@ export async function POST(request: NextRequest) {
         recommendationCount: recommendations.length,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Lỗi khi xử lý submit telemetry:", error);
     return NextResponse.json(
-      { success: false, error: "Lỗi máy chủ khi lưu trữ dữ liệu phần cứng" },
+      {
+        success: false,
+        error: `Lỗi máy chủ khi lưu trữ dữ liệu phần cứng: ${error?.message || String(error)}`,
+      },
       { status: 500 }
     );
   }
