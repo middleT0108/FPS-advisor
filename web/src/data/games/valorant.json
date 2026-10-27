@@ -1,0 +1,68 @@
+{
+  "gameId": "valorant",
+  "displayName": "Valorant",
+  "developer": "Riot Games",
+  "engine": "Unreal Engine 4",
+  "antiCheat": "Riot Vanguard (Ring 0 Kernel)",
+  "characteristics": {
+    "cpuWeight": 0.75,
+    "gpuWeight": 0.25,
+    "ramSensitivity": {
+      "dualChannelBenefitPercent": 22.0,
+      "speedSensitivity": "HIGH",
+      "recommendedMinGb": 16
+    },
+    "vramSensitivity": {
+      "minVramMb": 2048,
+      "vramPenaltyUnderMinPercent": 40.0
+    },
+    "l3CacheSensitive": true
+  },
+  "referenceBaseline": {
+    "hardware": {
+      "cpuName": "AMD Ryzen 5 5600",
+      "cpuSingleScoreBaseline": 1450,
+      "cpuMultiScoreBaseline": 11000,
+      "gpuName": "NVIDIA GeForce RTX 3060 12GB",
+      "gpuScoreBaseline": 8500,
+      "ramGb": 16,
+      "ramDualChannel": true
+    },
+    "fpsData": {
+      "1080p": {
+        "Low": { "avgFps": 380, "low1PercentFps": 220 },
+        "Medium": { "avgFps": 340, "low1PercentFps": 200 },
+        "High": { "avgFps": 300, "low1PercentFps": 180 },
+        "Ultra": { "avgFps": 270, "low1PercentFps": 165 }
+      },
+      "1440p": {
+        "Low": { "avgFps": 320, "low1PercentFps": 190 },
+        "Medium": { "avgFps": 280, "low1PercentFps": 170 },
+        "High": { "avgFps": 240, "low1PercentFps": 150 },
+        "Ultra": { "avgFps": 210, "low1PercentFps": 130 }
+      },
+      "4k": {
+        "Low": { "avgFps": 210, "low1PercentFps": 130 },
+        "Medium": { "avgFps": 180, "low1PercentFps": 110 },
+        "High": { "avgFps": 150, "low1PercentFps": 95 },
+        "Ultra": { "avgFps": 125, "low1PercentFps": 80 }
+      }
+    }
+  },
+  "specificTweaks": [
+    {
+      "code": "VAL_MULTITHREADED_RENDERING",
+      "title": "Bật Multithreaded Rendering",
+      "targetSetting": "Video Settings -> Graphics Quality -> Multithreaded Rendering",
+      "recommendation": "Bật (On) đối với mọi CPU có từ 4 nhân / 8 luồng trở lên",
+      "estimatedGain": "+15% ~ +35% FPS"
+    },
+    {
+      "code": "VAL_RAWINPUT_BUFFER",
+      "title": "Bật RawInputBuffer",
+      "targetSetting": "General -> Other -> RawInputBuffer",
+      "recommendation": "Bật (On) nếu chuột có polling rate từ 1000Hz trở lên",
+      "estimatedGain": "Giảm giật input lag khi vẩy chuột nhanh"
+    }
+  ]
+}

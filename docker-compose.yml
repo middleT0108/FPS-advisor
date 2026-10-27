@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  fps-advisor-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: fps-advisor-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/data/prod.db
+      - NODE_ENV=production
+    volumes:
+      - web-data:/app/data
+
+volumes:
+  web-data:

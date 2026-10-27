@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FpsAdvisor.Core/FpsAdvisor.Core.csproj" />
+    <Project Path="src/FpsAdvisor.Desktop/FpsAdvisor.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FpsAdvisor.Tests/FpsAdvisor.Tests.csproj" />
+  </Folder>
+</Solution>

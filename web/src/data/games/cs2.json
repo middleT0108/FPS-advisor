@@ -1,0 +1,68 @@
+{
+  "gameId": "cs2",
+  "displayName": "Counter-Strike 2",
+  "developer": "Valve Corporation",
+  "engine": "Source 2",
+  "antiCheat": "Valve Anti-Cheat (VAC)",
+  "characteristics": {
+    "cpuWeight": 0.55,
+    "gpuWeight": 0.45,
+    "ramSensitivity": {
+      "dualChannelBenefitPercent": 18.0,
+      "speedSensitivity": "HIGH",
+      "recommendedMinGb": 16
+    },
+    "vramSensitivity": {
+      "minVramMb": 4096,
+      "vramPenaltyUnderMinPercent": 50.0
+    },
+    "l3CacheSensitive": true
+  },
+  "referenceBaseline": {
+    "hardware": {
+      "cpuName": "AMD Ryzen 5 5600",
+      "cpuSingleScoreBaseline": 1450,
+      "cpuMultiScoreBaseline": 11000,
+      "gpuName": "NVIDIA GeForce RTX 3060 12GB",
+      "gpuScoreBaseline": 8500,
+      "ramGb": 16,
+      "ramDualChannel": true
+    },
+    "fpsData": {
+      "1080p": {
+        "Low": { "avgFps": 290, "low1PercentFps": 165 },
+        "Medium": { "avgFps": 240, "low1PercentFps": 140 },
+        "High": { "avgFps": 195, "low1PercentFps": 115 },
+        "Ultra": { "avgFps": 160, "low1PercentFps": 95 }
+      },
+      "1440p": {
+        "Low": { "avgFps": 210, "low1PercentFps": 125 },
+        "Medium": { "avgFps": 175, "low1PercentFps": 105 },
+        "High": { "avgFps": 140, "low1PercentFps": 85 },
+        "Ultra": { "avgFps": 115, "low1PercentFps": 70 }
+      },
+      "4k": {
+        "Low": { "avgFps": 110, "low1PercentFps": 70 },
+        "Medium": { "avgFps": 90, "low1PercentFps": 55 },
+        "High": { "avgFps": 75, "low1PercentFps": 45 },
+        "Ultra": { "avgFps": 60, "low1PercentFps": 35 }
+      }
+    }
+  },
+  "specificTweaks": [
+    {
+      "code": "CS2_LAUNCH_OPTIONS",
+      "title": "Tối ưu Launch Options CS2",
+      "targetSetting": "Steam -> CS2 Properties -> Launch Options",
+      "recommendation": "Sử dụng: -nojoy +engine_low_latency_sleep_after_client_tick true",
+      "estimatedGain": "+5% ~ +10% 1% Low FPS, giảm input lag"
+    },
+    {
+      "code": "CS2_FIDELITYFX_FSR",
+      "title": "FidelityFX Super Resolution (FSR)",
+      "targetSetting": "Advanced Video -> FidelityFX Super Resolution",
+      "recommendation": "Để 'Disabled (Highest Quality)' nếu GPU đủ mạnh, chỉ bật 'Quality' khi bị GPU-bound ở 1440p/4K",
+      "estimatedGain": "+25% FPS khi GPU-bound"
+    }
+  ]
+}

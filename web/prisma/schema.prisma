@@ -1,0 +1,132 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Quản lý phiên liên kết giữa Desktop và Web qua mã 6 ký tự
+model LinkSession {
+  id              String         @id @default(uuid())
+  code            String         @unique // Mã 6 ký tự in hoa (VD: A7X9K2)
+  status          String         @default("PENDING") // PENDING, LINKED, EXPIRED
+  createdAt       DateTime       @default(now())
+  expiresAt       DateTime       // Hết hạn sau 15 phút
+  linkedAt        DateTime?
+  systemProfileId String?        @unique
+  systemProfile   SystemProfile? @relation(fields: [systemProfileId], references: [id], onDelete: Cascade)
+
+  @@index([code])
+}
+
+// Thông tin chi tiết cấu hình phần cứng và hệ thống
+model SystemProfile {
+  id                  String             @id @default(uuid())
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  
+  // CPU
+  cpuName             String
+  cpuCores            Int
+  cpuThreads          Int
+  cpuBaseClockMhz     Int
+  cpuBoostClockMhz    Int
+  cpuCacheL3Mb        Float
+  
+  // GPU
+  gpuName             String
+  gpuVendor           String             // NVIDIA, AMD, INTEL
+  gpuVramMb           Int
+  gpuDriverVersion    String
+  gpuClockMhz         Int
+  
+  // RAM
+  ramTotalGb          Float
+  ramSpeedMhz         Int
+  ramChannels         Int                // 1 = Single Channel, 2 = Dual Channel
+  ramXmpEnabled       Boolean            @default(false)
+  
+  // Lưu trữ & Màn hình
+  diskModel           String
+  diskType            String             // NVME_SSD, SATA_SSD, HDD
+  displayResolution   String             // VD: "1920x1080"
+  displayRefreshRate  Int                // VD: 144, 240
+  
+  // Cấu hình Windows
+  osName              String
+  osVersion           String
+  powerPlan           String             // Balanced, High Performance, Power Saver
+  gameModeEnabled     Boolean            @default(false)
+  hagsEnabled         Boolean            @default(false) // Hardware-Accelerated GPU Scheduling
+  
+  // Quan hệ
+  linkSession         LinkSession?
+  benchmarkResult     BenchmarkResult?
+  fpsRecords          FpsRecord[]
+  recommendations     RecommendationLog[]
+}
+
+// Kết quả đo đạc từ bộ Synthetic Benchmark của Desktop
+model BenchmarkResult {
+  id                   String        @id @default(uuid())
+  systemProfileId      String        @unique
+  systemProfile        SystemProfile @relation(fields: [systemProfileId], references: [id], onDelete: Cascade)
+  createdAt            DateTime      @default(now())
+  
+  // Điểm số quy chuẩn (Normalized Score)
+  cpuSingleScore       Int
+  cpuMultiScore        Int
+  gpuScore             Int
+  ramBandwidthMbPerSec Float
+  diskReadMbPerSec     Float
+  diskWriteMbPerSec    Float
+  
+  // Giám sát nhiệt và nghẽn khi stress test
+  maxCpuTempC          Float
+  maxGpuTempC          Float
+  cpuThermalThrottled  Boolean       @default(false)
+  gpuThermalThrottled  Boolean       @default(false)
+  bottleneckRatio      Float         // Tỷ số tải CPU/GPU
+}
+
+// Bản ghi dữ liệu FPS (cả ước tính và đo thực tế)
+model FpsRecord {
+  id                 String        @id @default(uuid())
+  systemProfileId    String
+  systemProfile      SystemProfile @relation(fields: [systemProfileId], references: [id], onDelete: Cascade)
+  gameKey            String        // valorant, league-of-legends, delta-force, cs2
+  resolution         String        // "1080p", "1440p", "4k"
+  graphicPreset      String        // "Low", "Medium", "High", "Ultra"
+  
+  // Phân loại nguồn FPS: DATABASE_ESTIMATE | SYNTHETIC_ESTIMATE | ACTUAL_PRESENTMON
+  source             String
+  
+  avgFps             Float
+  low1PercentFps     Float
+  low01PercentFps    Float?
+  frametimeMs        Float
+  durationSeconds    Int           @default(0) // > 0 nếu là đo thực tế
+  confidenceInterval Float?        // Sai số ước tính (VD: 0.1 nghĩa là ±10%)
+  bottleneckType     String        // "CPU_BOUND" | "GPU_BOUND" | "BALANCED"
+  measuredAt         DateTime      @default(now())
+
+  @@index([systemProfileId, gameKey])
+}
+
+// Lịch sử các khuyến nghị tạo ra cho máy
+model RecommendationLog {
+  id               String        @id @default(uuid())
+  systemProfileId  String
+  systemProfile    SystemProfile @relation(fields: [systemProfileId], references: [id], onDelete: Cascade)
+  ruleCode         String        // VD: REC_RAM_SINGLE_CHANNEL, REC_XMP_OFF
+  category         String        // HARDWARE_UPGRADE, WINDOWS_SETTING, GAME_SETTING, THERMAL
+  title            String
+  explanation      String
+  steps            String        // Hướng dẫn JSON string mảng các bước
+  impact           String        // HIGH, MEDIUM, LOW
+  difficulty       String        // EASY, MEDIUM, HARD
+  estimatedFpsGain String       // VD: "+15% ~ +25% 1% Low FPS"
+  createdAt        DateTime      @default(now())
+}

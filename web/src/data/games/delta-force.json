@@ -1,0 +1,68 @@
+{
+  "gameId": "delta-force",
+  "displayName": "Delta Force",
+  "developer": "Team Jade / TiMi Studio Group",
+  "engine": "Unreal Engine 5",
+  "antiCheat": "Anti-Cheat Expert (ACE)",
+  "characteristics": {
+    "cpuWeight": 0.40,
+    "gpuWeight": 0.60,
+    "ramSensitivity": {
+      "dualChannelBenefitPercent": 20.0,
+      "speedSensitivity": "HIGH",
+      "recommendedMinGb": 16
+    },
+    "vramSensitivity": {
+      "minVramMb": 6144,
+      "vramPenaltyUnderMinPercent": 55.0
+    },
+    "l3CacheSensitive": false
+  },
+  "referenceBaseline": {
+    "hardware": {
+      "cpuName": "AMD Ryzen 5 5600",
+      "cpuSingleScoreBaseline": 1450,
+      "cpuMultiScoreBaseline": 11000,
+      "gpuName": "NVIDIA GeForce RTX 3060 12GB",
+      "gpuScoreBaseline": 8500,
+      "ramGb": 16,
+      "ramDualChannel": true
+    },
+    "fpsData": {
+      "1080p": {
+        "Low": { "avgFps": 135, "low1PercentFps": 85 },
+        "Medium": { "avgFps": 105, "low1PercentFps": 68 },
+        "High": { "avgFps": 82, "low1PercentFps": 52 },
+        "Ultra": { "avgFps": 65, "low1PercentFps": 40 }
+      },
+      "1440p": {
+        "Low": { "avgFps": 95, "low1PercentFps": 62 },
+        "Medium": { "avgFps": 74, "low1PercentFps": 48 },
+        "High": { "avgFps": 58, "low1PercentFps": 37 },
+        "Ultra": { "avgFps": 45, "low1PercentFps": 28 }
+      },
+      "4k": {
+        "Low": { "avgFps": 52, "low1PercentFps": 34 },
+        "Medium": { "avgFps": 40, "low1PercentFps": 25 },
+        "High": { "avgFps": 30, "low1PercentFps": 19 },
+        "Ultra": { "avgFps": 22, "low1PercentFps": 14 }
+      }
+    }
+  },
+  "specificTweaks": [
+    {
+      "code": "DF_DLSS_FSR3",
+      "title": "Bật DLSS / FSR 3 Upscaling",
+      "targetSetting": "Video Settings -> Display -> Resolution Scaling",
+      "recommendation": "Bật DLSS/FSR ở chế độ Quality khi chơi ở 1440p/4K",
+      "estimatedGain": "+30% ~ +50% FPS"
+    },
+    {
+      "code": "DF_VOLUMETRIC_FOG",
+      "title": "Giảm sương mù thể tích (Volumetric Fog)",
+      "targetSetting": "Graphics Quality -> Volumetric Effects -> Low",
+      "recommendation": "Giảm từ High xuống Low giải phóng lượng lớn băng thông VRAM",
+      "estimatedGain": "+15% FPS trong bản đồ thời tiết xấu"
+    }
+  ]
+}

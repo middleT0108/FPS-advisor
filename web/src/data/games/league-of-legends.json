@@ -1,0 +1,68 @@
+{
+  "gameId": "league-of-legends",
+  "displayName": "Liên Minh Huyền Thoại (LMHT)",
+  "developer": "Riot Games",
+  "engine": "Proprietary",
+  "antiCheat": "Riot Vanguard",
+  "characteristics": {
+    "cpuWeight": 0.85,
+    "gpuWeight": 0.15,
+    "ramSensitivity": {
+      "dualChannelBenefitPercent": 15.0,
+      "speedSensitivity": "MEDIUM",
+      "recommendedMinGb": 8
+    },
+    "vramSensitivity": {
+      "minVramMb": 1024,
+      "vramPenaltyUnderMinPercent": 25.0
+    },
+    "l3CacheSensitive": true
+  },
+  "referenceBaseline": {
+    "hardware": {
+      "cpuName": "AMD Ryzen 5 5600",
+      "cpuSingleScoreBaseline": 1450,
+      "cpuMultiScoreBaseline": 11000,
+      "gpuName": "NVIDIA GeForce RTX 3060 12GB",
+      "gpuScoreBaseline": 8500,
+      "ramGb": 16,
+      "ramDualChannel": true
+    },
+    "fpsData": {
+      "1080p": {
+        "Low": { "avgFps": 260, "low1PercentFps": 160 },
+        "Medium": { "avgFps": 220, "low1PercentFps": 140 },
+        "High": { "avgFps": 200, "low1PercentFps": 130 },
+        "Ultra": { "avgFps": 185, "low1PercentFps": 120 }
+      },
+      "1440p": {
+        "Low": { "avgFps": 240, "low1PercentFps": 150 },
+        "Medium": { "avgFps": 200, "low1PercentFps": 130 },
+        "High": { "avgFps": 180, "low1PercentFps": 120 },
+        "Ultra": { "avgFps": 165, "low1PercentFps": 110 }
+      },
+      "4k": {
+        "Low": { "avgFps": 190, "low1PercentFps": 120 },
+        "Medium": { "avgFps": 160, "low1PercentFps": 100 },
+        "High": { "avgFps": 140, "low1PercentFps": 90 },
+        "Ultra": { "avgFps": 125, "low1PercentFps": 80 }
+      }
+    }
+  },
+  "specificTweaks": [
+    {
+      "code": "LOL_DISABLE_DEBUG_LOGS",
+      "title": "Tắt dự đoán di chuyển để tối ưu vòng lặp CPU",
+      "targetSetting": "Game Settings -> Game -> Movement Prediction (Bỏ tick)",
+      "recommendation": "Tắt dự đoán di chuyển để giảm tải CPU render vòng lặp",
+      "estimatedGain": "+10% FPS trong combat đông người"
+    },
+    {
+      "code": "LOL_DX11_LEGACY",
+      "title": "Chế độ tương thích DirectX 11",
+      "targetSetting": "Client Settings -> Game -> Prefer DX9 Legacy Mode (Tắt)",
+      "recommendation": "Đảm bảo tắt DX9 Legacy để chạy trên pipeline DX11 tối ưu đa luồng",
+      "estimatedGain": "Cải thiện 1% low FPS ổn định"
+    }
+  ]
+}
