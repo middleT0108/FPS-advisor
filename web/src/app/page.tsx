@@ -45,13 +45,21 @@ export default function HomePage() {
         {/* Action Buttons */}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="https://github.com"
-            target="_blank"
-            rel="noreferrer"
+            href="/downloads/FpsAdvisor-Desktop-win-x64.zip"
+            download="FpsAdvisor-Desktop-win-x64.zip"
             className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-base shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02]"
           >
             <Download className="w-5 h-5" />
-            Tải Desktop App (Windows .NET 8)
+            Tải Desktop App (.zip)
+          </a>
+
+          <a
+            href="/downloads/FpsAdvisor.Desktop.exe"
+            download="FpsAdvisor.Desktop.exe"
+            className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-base shadow-lg shadow-purple-600/30 transition-all hover:scale-[1.02]"
+          >
+            <Download className="w-5 h-5" />
+            Tải file chạy trực tiếp (.exe)
           </a>
 
           <Link
