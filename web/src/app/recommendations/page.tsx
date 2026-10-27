@@ -459,7 +459,7 @@ pause
 
                       {autoAction ? (
                         <span className="text-[10px] font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded flex items-center gap-1">
-                          <Zap className="w-2.5 h-2.5" /> Hỗ trợ tự động bật
+                          <Zap className="w-2.5 h-2.5" /> Hỗ trợ tự động sửa
                         </span>
                       ) : (
                         <span className="text-[10px] font-semibold text-gray-400 bg-gray-800/80 px-2 py-0.5 rounded">
@@ -481,7 +481,7 @@ pause
                         className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all active:scale-95"
                       >
                         <Zap className="w-3.5 h-3.5 text-yellow-300" />
-                        Tự động bật
+                        Tự động sửa
                       </button>
                     )}
 
@@ -528,13 +528,13 @@ pause
                             className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
                           >
                             <Zap className="w-3.5 h-3.5" />
-                            Tự động bật lỗi này ngay
+                            Tự động sửa lỗi này ngay
                           </button>
                           <button
                             onClick={() =>
                               triggerDownload(
                                 autoAction.batScript,
-                                `TuDongBat_${rec.ruleCode || "Fix"}.bat`
+                                `TuDongSua_${rec.ruleCode || "Fix"}.bat`
                               )
                             }
                             className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium flex items-center gap-1.5 transition-all"
@@ -578,7 +578,7 @@ pause
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">
-                    {getAutomatableAction(activeModalRec)?.actionTitle || "Tự động bật tính năng"}
+                    {getAutomatableAction(activeModalRec)?.actionTitle || "Tự động sửa lỗi"}
                   </h3>
                   <p className="text-xs text-gray-400">
                     Sửa nhanh cấu hình hệ thống an toàn &amp; chính xác
@@ -625,13 +625,13 @@ pause
                       onClick={() =>
                         triggerDownload(
                           action.batScript,
-                          `TuDongBat_${activeModalRec.ruleCode || "Fix"}.bat`
+                          `TuDongSua_${activeModalRec.ruleCode || "Fix"}.bat`
                         )
                       }
                       className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
                     >
                       <Download className="w-4 h-4" />
-                      Tải file Script Tự Động Bật (.bat)
+                      Tải file Script Tự Động Sửa (.bat)
                     </button>
                     <p className="text-[11px] text-gray-400 text-center">
                       * Tải về và nhấp đúp để chạy (Tự động yêu cầu quyền Admin an toàn).

@@ -272,7 +272,7 @@ public partial class MainWindow : Window
 
             if (res.RestartRequired)
             {
-                MessageBox.Show("Đã tự động bật HAGS (Lập lịch GPU phần cứng). Vui lòng KHỞI ĐỘNG LẠI MÁY TÍNH khi thuận tiện để hệ điều hành kích hoạt đầy đủ driver GPU!", "Thông báo HAGS", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Đã tự động sửa và bật HAGS (Lập lịch GPU phần cứng). Vui lòng KHỞI ĐỘNG LẠI MÁY TÍNH khi thuận tiện để hệ điều hành kích hoạt đầy đủ driver GPU!", "Thông báo HAGS", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         else
@@ -298,7 +298,7 @@ public partial class MainWindow : Window
         bool ok = _optimizer.EnableHags(out string err);
         if (ok)
         {
-            MessageBox.Show("ĐÃ TỰ ĐỘNG BẬT HAGS THÀNH CÔNG!\n\nLưu ý quan trọng: Vui lòng KHỞI ĐỘNG LẠI MÁY TÍNH (Restart PC) để GPU trực tiếp quản lý VRAM và kích hoạt độ trễ thấp.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("ĐÃ TỰ ĐỘNG SỬA VÀ BẬT HAGS THÀNH CÔNG!\n\nLưu ý quan trọng: Vui lòng KHỞI ĐỘNG LẠI MÁY TÍNH (Restart PC) để GPU trực tiếp quản lý VRAM và kích hoạt độ trễ thấp.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             PerformHardwareScan();
         }
         else
@@ -312,7 +312,7 @@ public partial class MainWindow : Window
         bool ok = _optimizer.EnableGameMode(out string err);
         if (ok)
         {
-            MessageBox.Show("ĐÃ TỰ ĐỘNG BẬT WINDOWS GAME MODE THÀNH CÔNG!\n\nTài nguyên CPU và GPU sẽ được ưu tiên tuyệt đối cho cửa sổ game khi khởi chạy.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("ĐÃ TỰ ĐỘNG SỬA VÀ BẬT WINDOWS GAME MODE THÀNH CÔNG!\n\nTài nguyên CPU và GPU sẽ được ưu tiên tuyệt đối cho cửa sổ game khi khởi chạy.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             PerformHardwareScan();
         }
         else

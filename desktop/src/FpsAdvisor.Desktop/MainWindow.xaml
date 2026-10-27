@@ -170,8 +170,8 @@
                                             <TextBlock Text="✓ Đặt Process Priority của Game sang mức 'High' trong Task Scheduler" FontSize="12" Foreground="#34D399" Margin="0,2" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                            <Button x:Name="BtnToggleHags" Content="⚡ Tự động bật HAGS" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Margin="0,0,8,0" Click="BtnToggleHags_Click" />
-                                            <Button x:Name="BtnToggleGameMode" Content="⚡ Bật Game Mode" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Margin="0,0,8,0" Click="BtnToggleGameMode_Click" />
+                                            <Button x:Name="BtnToggleHags" Content="⚡ Tự động sửa HAGS" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Margin="0,0,8,0" Click="BtnToggleHags_Click" />
+                                            <Button x:Name="BtnToggleGameMode" Content="⚡ Tự động sửa Game Mode" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Margin="0,0,8,0" Click="BtnToggleGameMode_Click" />
                                             <Button x:Name="BtnTogglePowerPlan" Content="⚡ High Performance" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Click="BtnTogglePowerPlan_Click" />
                                         </StackPanel>
                                     </StackPanel>
