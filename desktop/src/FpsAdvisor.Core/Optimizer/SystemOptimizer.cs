@@ -20,8 +20,10 @@ public class OptimizationBackupState
 {
     public string PreviousPowerPlanGuid { get; set; } = string.Empty;
     public int PreviousGameModeState { get; set; } = 0;
+    public int PreviousHagsState { get; set; } = 1;
     public bool PowerPlanModified { get; set; }
     public bool GameModeModified { get; set; }
+    public bool HagsModified { get; set; }
 }
 
 public class OptimizationResult
@@ -31,7 +33,9 @@ public class OptimizationResult
     public double MemoryFreedMb { get; set; }
     public bool PowerPlanApplied { get; set; }
     public bool GameModeApplied { get; set; }
+    public bool HagsApplied { get; set; }
     public bool GamePriorityBoosted { get; set; }
+    public bool RestartRequired { get; set; }
 }
 
 public class SystemOptimizer
@@ -91,7 +95,7 @@ public class SystemOptimizer
     }
 
     /// <summary>
-    /// Tối ưu toàn diện 1-Click cho Gaming: Power Plan + Game Mode + Dọn RAM + Tăng Priority
+    /// Tối ưu toàn diện 1-Click cho Gaming: Power Plan + Game Mode + HAGS + Dọn RAM + Tăng Priority
     /// </summary>
     public OptimizationResult OptimizeGamingPerformance(string? gameProcessName)
     {
@@ -105,7 +109,14 @@ public class SystemOptimizer
             // 2. Kích hoạt Game Mode
             result.GameModeApplied = EnableGameMode(out _);
 
-            // 3. Giải phóng bộ nhớ RAM đệm (Memory Trim) của các app nền không dùng đến
+            // 3. Kích hoạt Lập lịch GPU (HAGS) nếu chưa bật
+            if (!IsHagsEnabled())
+            {
+                result.HagsApplied = EnableHags(out _);
+                if (result.HagsApplied) result.RestartRequired = true;
+            }
+
+            // 4. Giải phóng bộ nhớ RAM đệm (Memory Trim) của các app nền không dùng đến
             long bytesFreed = 0;
             var processes = Process.GetProcesses();
             foreach (var p in processes)
@@ -128,7 +139,7 @@ public class SystemOptimizer
             }
             result.MemoryFreedMb = Math.Round(bytesFreed / (1024.0 * 1024.0), 1);
 
-            // 4. Nếu game đang chạy, tăng Priority của tiến trình game lên High
+            // 5. Nếu game đang chạy, tăng Priority của tiến trình game lên High
             if (!string.IsNullOrEmpty(gameProcessName))
             {
                 var gameProcs = Process.GetProcessesByName(gameProcessName);
@@ -144,8 +155,10 @@ public class SystemOptimizer
             }
 
             result.Success = true;
-            result.Summary = $"Đã kích hoạt High Performance, Game Mode, giải phóng {result.MemoryFreedMb} MB RAM rác" +
-                             (result.GamePriorityBoosted ? $" và ưu tiên CPU mức cao cho [{gameProcessName}]!" : "!");
+            result.Summary = $"Đã kích hoạt High Performance, Game Mode" +
+                             (result.HagsApplied ? ", Bật HAGS GPU" : "") +
+                             $", giải phóng {result.MemoryFreedMb} MB RAM rác" +
+                             (result.GamePriorityBoosted ? $" và ưu tiên CPU cho [{gameProcessName}]!" : "!");
         }
         catch (Exception ex)
         {
@@ -154,6 +167,75 @@ public class SystemOptimizer
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Kiểm tra HAGS (Hardware-accelerated GPU Scheduling) có đang bật hay không.
+    /// </summary>
+    public bool IsHagsEnabled()
+    {
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers");
+            if (key != null)
+            {
+                var val = key.GetValue("HwSchMode");
+                if (val is int i && i == 2)
+                    return true;
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    /// <summary>
+    /// Tự động bật HAGS (Hardware-accelerated GPU Scheduling).
+    /// </summary>
+    public bool EnableHags(out string error)
+    {
+        error = string.Empty;
+        try
+        {
+            using var key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers");
+            if (key != null)
+            {
+                var currentVal = key.GetValue("HwSchMode");
+                _backup.PreviousHagsState = currentVal is int i ? i : 1;
+                key.SetValue("HwSchMode", 2, RegistryValueKind.DWord);
+                _backup.HagsModified = true;
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Hoàn tác tắt HAGS về trạng thái trước đó.
+    /// </summary>
+    public bool UndoHags(out string error)
+    {
+        error = string.Empty;
+        if (!_backup.HagsModified) return true;
+
+        try
+        {
+            using var key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers");
+            if (key != null)
+            {
+                key.SetValue("HwSchMode", _backup.PreviousHagsState, RegistryValueKind.DWord);
+                _backup.HagsModified = false;
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        return false;
     }
 
     /// <summary>

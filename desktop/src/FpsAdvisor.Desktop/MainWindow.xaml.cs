@@ -269,6 +269,11 @@ public partial class MainWindow : Window
             BtnQuickUndo.IsEnabled = true;
             PerformHardwareScan();
             RefreshBackgroundApps();
+
+            if (res.RestartRequired)
+            {
+                MessageBox.Show("Đã tự động bật HAGS (Lập lịch GPU phần cứng). Vui lòng KHỞI ĐỘNG LẠI MÁY TÍNH khi thuận tiện để hệ điều hành kích hoạt đầy đủ driver GPU!", "Thông báo HAGS", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
         else
         {
@@ -276,13 +281,68 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BtnToggleHags_Click(object sender, RoutedEventArgs e)
+    {
+        if (_optimizer.IsHagsEnabled())
+        {
+            var mbr = MessageBox.Show("HAGS (Lập lịch GPU phần cứng) hiện ĐANG BẬT.\nBạn có muốn tắt đi (hoàn tác) không?", "HAGS Đang Bật", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (mbr == MessageBoxResult.Yes)
+            {
+                _optimizer.UndoHags(out _);
+                MessageBox.Show("Đã khôi phục HAGS về tắt. Hãy khởi động lại máy để có hiệu lực.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                PerformHardwareScan();
+            }
+            return;
+        }
+
+        bool ok = _optimizer.EnableHags(out string err);
+        if (ok)
+        {
+            MessageBox.Show("ĐÃ TỰ ĐỘNG BẬT HAGS THÀNH CÔNG!\n\nLưu ý quan trọng: Vui lòng KHỞI ĐỘNG LẠI MÁY TÍNH (Restart PC) để GPU trực tiếp quản lý VRAM và kích hoạt độ trễ thấp.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            PerformHardwareScan();
+        }
+        else
+        {
+            MessageBox.Show($"Không thể ghi Registry HAGS: {err}\nVui lòng chạy ứng dụng với quyền Run as Administrator.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void BtnToggleGameMode_Click(object sender, RoutedEventArgs e)
+    {
+        bool ok = _optimizer.EnableGameMode(out string err);
+        if (ok)
+        {
+            MessageBox.Show("ĐÃ TỰ ĐỘNG BẬT WINDOWS GAME MODE THÀNH CÔNG!\n\nTài nguyên CPU và GPU sẽ được ưu tiên tuyệt đối cho cửa sổ game khi khởi chạy.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            PerformHardwareScan();
+        }
+        else
+        {
+            MessageBox.Show($"Lỗi bật Game Mode: {err}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void BtnTogglePowerPlan_Click(object sender, RoutedEventArgs e)
+    {
+        bool ok = _optimizer.SetHighPerformancePowerPlan(out string err);
+        if (ok)
+        {
+            MessageBox.Show("ĐÃ CHUYỂN SANG HIGH PERFORMANCE POWER PLAN!\n\nXung nhịp CPU sẽ luôn duy trì ở mức xung Boost cao nhất, không bị tụt xung khi giao tranh.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            PerformHardwareScan();
+        }
+        else
+        {
+            MessageBox.Show($"Lỗi chuyển Power Plan: {err}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private void BtnQuickUndo_Click(object sender, RoutedEventArgs e)
     {
         _optimizer.UndoGameMode(out _);
         _optimizer.UndoPowerPlan(out _);
+        _optimizer.UndoHags(out _);
         BtnQuickUndo.IsEnabled = false;
         BorderQuickOptStatus.Visibility = Visibility.Collapsed;
-        MessageBox.Show("Đã hoàn tác khôi phục thiết lập nguồn và Game Mode về trạng thái ban đầu!", "Hoàn tác thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show("Đã hoàn tác khôi phục thiết lập nguồn, Game Mode và HAGS về trạng thái ban đầu!", "Hoàn tác thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         PerformHardwareScan();
     }
     #endregion

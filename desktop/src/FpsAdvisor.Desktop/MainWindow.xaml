@@ -163,10 +163,16 @@
                                     <StackPanel Grid.Column="0" Margin="0,0,20,0">
                                         <TextBlock Text="Các tác vụ tối ưu sẽ thực hiện:" FontWeight="Bold" FontSize="13" Margin="0,0,0,8" />
                                         <StackPanel Margin="0,0,0,4">
+                                            <TextBlock Text="✓ Bật Lập lịch GPU tăng tốc phần cứng (HAGS - HwSchMode = 2)" FontSize="12" Foreground="#34D399" Margin="0,2" />
                                             <TextBlock Text="✓ Kích hoạt Windows High Performance Power Plan (Khóa xung boost CPU)" FontSize="12" Foreground="#34D399" Margin="0,2" />
                                             <TextBlock Text="✓ Kích hoạt Windows Game Mode (Ưu tiên GPU scheduling)" FontSize="12" Foreground="#34D399" Margin="0,2" />
                                             <TextBlock Text="✓ Giải phóng bộ nhớ RAM đệm (Windows WorkingSet Trim) của các app nền" FontSize="12" Foreground="#34D399" Margin="0,2" />
                                             <TextBlock Text="✓ Đặt Process Priority của Game sang mức 'High' trong Task Scheduler" FontSize="12" Foreground="#34D399" Margin="0,2" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <Button x:Name="BtnToggleHags" Content="⚡ Tự động bật HAGS" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Margin="0,0,8,0" Click="BtnToggleHags_Click" />
+                                            <Button x:Name="BtnToggleGameMode" Content="⚡ Bật Game Mode" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Margin="0,0,8,0" Click="BtnToggleGameMode_Click" />
+                                            <Button x:Name="BtnTogglePowerPlan" Content="⚡ High Performance" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="11" Click="BtnTogglePowerPlan_Click" />
                                         </StackPanel>
                                     </StackPanel>
 
