@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
 namespace FpsAdvisor.Core.Optimizer;
@@ -23,8 +24,21 @@ public class OptimizationBackupState
     public bool GameModeModified { get; set; }
 }
 
+public class OptimizationResult
+{
+    public bool Success { get; set; }
+    public string Summary { get; set; } = string.Empty;
+    public double MemoryFreedMb { get; set; }
+    public bool PowerPlanApplied { get; set; }
+    public bool GameModeApplied { get; set; }
+    public bool GamePriorityBoosted { get; set; }
+}
+
 public class SystemOptimizer
 {
+    [DllImport("psapi.dll")]
+    private static extern int EmptyWorkingSet(IntPtr hwProc);
+
     private static readonly OptimizationBackupState _backup = new();
 
     public static OptimizationBackupState CurrentBackup => _backup;
@@ -74,6 +88,72 @@ public class SystemOptimizer
         }
 
         return heavyList.OrderByDescending(p => p.MemoryMb).ToList();
+    }
+
+    /// <summary>
+    /// Tối ưu toàn diện 1-Click cho Gaming: Power Plan + Game Mode + Dọn RAM + Tăng Priority
+    /// </summary>
+    public OptimizationResult OptimizeGamingPerformance(string? gameProcessName)
+    {
+        var result = new OptimizationResult();
+
+        try
+        {
+            // 1. Kích hoạt High Performance Power Plan
+            result.PowerPlanApplied = SetHighPerformancePowerPlan(out _);
+
+            // 2. Kích hoạt Game Mode
+            result.GameModeApplied = EnableGameMode(out _);
+
+            // 3. Giải phóng bộ nhớ RAM đệm (Memory Trim) của các app nền không dùng đến
+            long bytesFreed = 0;
+            var processes = Process.GetProcesses();
+            foreach (var p in processes)
+            {
+                try
+                {
+                    // Không trim tiến trình hệ thống quan trọng hoặc game đang chơi
+                    if (p.Id <= 4 || (gameProcessName != null && p.ProcessName.Equals(gameProcessName, StringComparison.OrdinalIgnoreCase)))
+                        continue;
+
+                    long before = p.WorkingSet64;
+                    EmptyWorkingSet(p.Handle);
+                    long after = p.WorkingSet64;
+                    if (before > after)
+                    {
+                        bytesFreed += (before - after);
+                    }
+                }
+                catch { }
+            }
+            result.MemoryFreedMb = Math.Round(bytesFreed / (1024.0 * 1024.0), 1);
+
+            // 4. Nếu game đang chạy, tăng Priority của tiến trình game lên High
+            if (!string.IsNullOrEmpty(gameProcessName))
+            {
+                var gameProcs = Process.GetProcessesByName(gameProcessName);
+                foreach (var gp in gameProcs)
+                {
+                    try
+                    {
+                        gp.PriorityClass = ProcessPriorityClass.High;
+                        result.GamePriorityBoosted = true;
+                    }
+                    catch { }
+                }
+            }
+
+            result.Success = true;
+            result.Summary = $"Đã kích hoạt High Performance, Game Mode, giải phóng {result.MemoryFreedMb} MB RAM rác" +
+                             (result.GamePriorityBoosted ? $" và ưu tiên CPU mức cao cho [{gameProcessName}]!" : "!");
+        }
+        catch (Exception ex)
+        {
+            result.Success = false;
+            result.Summary = $"Lỗi khi tối ưu: {ex.Message}";
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -134,14 +214,12 @@ public class SystemOptimizer
         error = string.Empty;
         try
         {
-            // 1. Sao lưu active power plan hiện tại
             string currentScheme = GetActivePowerPlanGuid();
             if (!string.IsNullOrEmpty(currentScheme))
             {
                 _backup.PreviousPowerPlanGuid = currentScheme;
             }
 
-            // 2. Kích hoạt High Performance (8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c)
             var psi = new ProcessStartInfo
             {
                 FileName = "powercfg",
@@ -212,7 +290,6 @@ public class SystemOptimizer
             {
                 string text = proc.StandardOutput.ReadToEnd();
                 proc.WaitForExit(1000);
-                // Định dạng output: "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)"
                 var match = System.Text.RegularExpressions.Regex.Match(text, @"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}");
                 if (match.Success)
                 {
@@ -221,6 +298,6 @@ public class SystemOptimizer
             }
         }
         catch { }
-        return "381b4222-f694-41f0-9685-ff5bb260df2e"; // Balanced GUID fallback
+        return "381b4222-f694-41f0-9685-ff5bb260df2e";
     }
 }

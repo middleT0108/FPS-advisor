@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="FPS Advisor - Công cụ Chẩn đoán &amp; Tối ưu PC Gaming"
-        Height="780" Width="1080"
+        Height="820" Width="1120"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BgDarkBrush}"
         Foreground="{StaticResource TextLightBrush}">
@@ -51,7 +51,7 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="TabItem">
-                                <Border x:Name="Border" Background="{StaticResource CardDarkBrush}" CornerRadius="8,8,0,0" Margin="0,0,4,0" Padding="16,10" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1,1,1,0">
+                                <Border x:Name="Border" Background="{StaticResource CardDarkBrush}" CornerRadius="8,8,0,0" Margin="0,0,4,0" Padding="14,10" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1,1,1,0">
                                     <ContentPresenter ContentSource="Header" TextElement.FontWeight="SemiBold" TextElement.Foreground="{StaticResource TextMutedBrush}" />
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -66,8 +66,129 @@
                 </Style>
             </TabControl.Resources>
 
+            <!-- TAB MỚI: TỐI ƯU FPS CHO MÁY (REALTIME FPS & ONE-CLICK BOOST) -->
+            <TabItem Header="⚡ Tối ưu FPS cho máy" IsSelected="True">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,16,0,0" Grid.IsSharedSizeScope="True">
+                        <!-- Top HUD Bar: Realtime FPS Monitoring -->
+                        <Border Background="{StaticResource CardDarkBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1" Margin="0,0,0,16">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Giám sát FPS Game thời gian thực &amp; Tình trạng máy" FontSize="16" FontWeight="Bold" Foreground="White" />
+                                        <TextBlock Text="Theo dõi độ trễ khung hình, 1% Low và nhiệt độ linh kiện trong lúc chơi game (ETW Safe Pipeline)." FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Game đang chọn:" FontSize="12" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <ComboBox x:Name="CboActiveGame" Width="220" Padding="8,5" Background="#0F172A" Foreground="White" BorderBrush="{StaticResource BorderDarkBrush}" SelectionChanged="CboActiveGame_SelectionChanged">
+                                            <ComboBoxItem Content="Valorant" IsSelected="True" Tag="VALORANT-Win64-Shipping" />
+                                            <ComboBoxItem Content="Counter-Strike 2" Tag="cs2" />
+                                            <ComboBoxItem Content="Liên Minh Huyền Thoại" Tag="League of Legends" />
+                                            <ComboBoxItem Content="Delta Force" Tag="DeltaForceClient-Win64" />
+                                        </ComboBox>
+                                        <Button x:Name="BtnToggleRealtimeFps" Content="Bật Giám sát Realtime" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="BtnToggleRealtimeFps_Click" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Live Metrics Dashboard -->
+                                <Border Background="#090E1A" CornerRadius="10" Padding="16" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Big FPS Display -->
+                                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                            <TextBlock Text="FPS TỨC THỜI (REALTIME)" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                            <TextBlock x:Name="TxtRealtimeFps" Text="-- FPS" FontSize="36" FontWeight="Black" Foreground="#10B981" Margin="0,4,0,0" />
+                                            <TextBlock x:Name="TxtRealtimeGameStatus" Text="Chưa kích hoạt giám sát" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+                                        </StackPanel>
+
+                                        <!-- Avg FPS -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="FPS Trung bình" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+                                            <TextBlock x:Name="TxtRealtimeAvgFps" Text="-- FPS" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <!-- 1% Low -->
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <TextBlock Text="1% Low FPS" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+                                            <TextBlock x:Name="TxtRealtime1Low" Text="-- FPS" FontSize="20" FontWeight="Bold" Foreground="#818CF8" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <!-- Frametime -->
+                                        <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                            <TextBlock Text="Frametime" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+                                            <TextBlock x:Name="TxtRealtimeFrametime" Text="-- ms" FontSize="20" FontWeight="Bold" Foreground="#FBBF24" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <!-- CPU Temp -->
+                                        <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                                            <TextBlock Text="Nhiệt độ CPU" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+                                            <TextBlock x:Name="TxtRealtimeCpuTemp" Text="-- °C" FontSize="20" FontWeight="Bold" Foreground="#F472B6" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <!-- GPU Temp -->
+                                        <StackPanel Grid.Column="5" VerticalAlignment="Center">
+                                            <TextBlock Text="Nhiệt độ GPU" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+                                            <TextBlock x:Name="TxtRealtimeGpuTemp" Text="-- °C" FontSize="20" FontWeight="Bold" Foreground="#60A5FA" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Bottom Section: One-Click Optimizer -->
+                        <Border Background="{StaticResource CardDarkBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Tối ưu hóa tức thì cho PC Gaming (One-Click Boost)" FontSize="16" FontWeight="Bold" Margin="0,0,0,4" />
+                                <TextBlock Text="Tự động tinh chỉnh cấu hình máy, dọn dẹp RAM rác, và ưu tiên tối đa tài nguyên cho game đang chơi." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16" />
+
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Action Checklist -->
+                                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                        <TextBlock Text="Các tác vụ tối ưu sẽ thực hiện:" FontWeight="Bold" FontSize="13" Margin="0,0,0,8" />
+                                        <StackPanel Margin="0,0,0,4">
+                                            <TextBlock Text="✓ Kích hoạt Windows High Performance Power Plan (Khóa xung boost CPU)" FontSize="12" Foreground="#34D399" Margin="0,2" />
+                                            <TextBlock Text="✓ Kích hoạt Windows Game Mode (Ưu tiên GPU scheduling)" FontSize="12" Foreground="#34D399" Margin="0,2" />
+                                            <TextBlock Text="✓ Giải phóng bộ nhớ RAM đệm (Windows WorkingSet Trim) của các app nền" FontSize="12" Foreground="#34D399" Margin="0,2" />
+                                            <TextBlock Text="✓ Đặt Process Priority của Game sang mức 'High' trong Task Scheduler" FontSize="12" Foreground="#34D399" Margin="0,2" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Big Optimize Button -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <Button x:Name="BtnQuickOptimize" Content="⚡ TỐI ƯU FPS NGAY" Style="{StaticResource PrimaryButton}" Height="50" FontSize="15" FontWeight="Black" Click="BtnQuickOptimize_Click" Margin="0,0,0,10" />
+                                        <Button x:Name="BtnQuickUndo" Content="Hoàn tác / Khôi phục ban đầu" Style="{StaticResource SecondaryButton}" IsEnabled="False" Click="BtnQuickUndo_Click" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Status Result Banner -->
+                                <Border x:Name="BorderQuickOptStatus" Visibility="Collapsed" Background="#064E3B" CornerRadius="8" Padding="12" BorderBrush="#059669" BorderThickness="1">
+                                    <TextBlock x:Name="TxtQuickOptStatus" Text="Đã tối ưu thành công!" FontSize="12" FontWeight="SemiBold" Foreground="#34D399" TextWrapping="Wrap" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- TAB 1: QUÉT CẤU HÌNH -->
-            <TabItem Header="1. Quét Cấu hình Phần cứng">
+            <TabItem Header="1. Quét Cấu hình">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,16,0,0">
                         <Grid Margin="0,0,0,16">
@@ -140,7 +261,7 @@
             </TabItem>
 
             <!-- TAB 2: SYNTHETIC BENCHMARK -->
-            <TabItem Header="2. Benchmark Tổng hợp (30-60s)">
+            <TabItem Header="2. Benchmark (30-60s)">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,16,0,0">
                         <Border Background="{StaticResource CardDarkBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1" Margin="0,0,0,16">
@@ -223,7 +344,7 @@
             </TabItem>
 
             <!-- TAB 3: ĐO FPS THỰC TẾ -->
-            <TabItem Header="3. Đo FPS Thực tế (ETW PresentMon)">
+            <TabItem Header="3. Đo FPS Phiên Chơi (PresentMon)">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,16,0,0">
                         <Border Background="{StaticResource CardDarkBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1" Margin="0,0,0,16">
@@ -295,37 +416,27 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- TAB 4: TỐI ƯU HỆ THỐNG -->
-            <TabItem Header="4. Tối ưu Hệ thống (Có Hoàn tác)">
+            <!-- TAB 4: DANH SÁCH ỨNG DỤNG NỀN -->
+            <TabItem Header="4. Ứng dụng nền">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,16,0,0">
-                        <Border Background="{StaticResource CardDarkBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1" Margin="0,0,0,16">
+                        <Border Background="{StaticResource CardDarkBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="Tối ưu thiết lập Windows &amp; Ứng dụng nền" FontSize="16" FontWeight="Bold" Margin="0,0,0,4" />
-                                <TextBlock Text="Mọi điều chỉnh chỉ thực hiện khi bạn bấm xác nhận và luôn có nút Hoàn tác khôi phục lại cài đặt ban đầu." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16" />
+                                <TextBlock Text="Ứng dụng chạy ngầm chiếm nhiều tài nguyên (Chỉ cảnh báo, không tự tắt):" FontWeight="Bold" FontSize="15" Margin="0,0,0,8" />
+                                <TextBlock Text="Các tiến trình trình duyệt web, launcher hoặc app chat ngốn CPU/RAM có thể gây hiện tượng micro-stutter." FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,16" />
 
-                                <CheckBox x:Name="ChkGameMode" Content="Kích hoạt Windows Game Mode (Ưu tiên tài nguyên CPU/GPU cho game)" IsChecked="True" Foreground="White" FontSize="13" Margin="0,0,0,10" />
-                                <CheckBox x:Name="ChkPowerPlan" Content="Chuyển Windows Power Plan sang 'High Performance' (Tránh hạ xung khi combat)" IsChecked="True" Foreground="White" FontSize="13" Margin="0,0,0,16" />
-
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                                    <Button x:Name="BtnApplyOptimizations" Content="Xác nhận Áp dụng Tối ưu" Style="{StaticResource PrimaryButton}" Click="BtnApplyOptimizations_Click" Margin="0,0,10,0" />
-                                    <Button x:Name="BtnUndoOptimizations" Content="Hoàn tác / Khôi phục ban đầu" Style="{StaticResource SecondaryButton}" IsEnabled="False" Click="BtnUndoOptimizations_Click" />
-                                </StackPanel>
-
-                                <!-- Heavy Background Apps Section -->
-                                <TextBlock Text="Ứng dụng chạy ngầm chiếm nhiều tài nguyên (Chỉ cảnh báo, không tự tắt):" FontWeight="Bold" FontSize="13" Margin="0,0,0,8" />
                                 <Border Background="#0F172A" CornerRadius="8" Padding="12" BorderBrush="{StaticResource BorderDarkBrush}" BorderThickness="1">
                                     <ItemsControl x:Name="ListHeavyProcesses">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid Margin="0,4">
+                                                <Grid Margin="0,6">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="200" />
-                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="120" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="White" />
-                                                    <TextBlock Grid.Column="1" Text="{Binding MemoryMb, StringFormat={}{0} MB RAM}" Foreground="#818CF8" />
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="White" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding MemoryMb, StringFormat={}{0} MB RAM}" Foreground="#818CF8" FontWeight="SemiBold" />
                                                     <TextBlock Grid.Column="2" Text="{Binding Recommendation}" Foreground="{StaticResource TextMutedBrush}" FontSize="11" />
                                                 </Grid>
                                             </DataTemplate>
@@ -359,8 +470,8 @@
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Địa chỉ Website API (Mặc định local hoặc deploy 24/7):" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4" />
-                                        <TextBox x:Name="TxtServerUrl" Text="http://localhost:3000" FontSize="14" Padding="10,8" Background="#0F172A" Foreground="White" BorderBrush="{StaticResource BorderDarkBrush}" />
+                                        <TextBlock Text="Địa chỉ Website API:" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="TxtServerUrl" Text="http://localhost:3005" FontSize="14" Padding="10,8" Background="#0F172A" Foreground="White" BorderBrush="{StaticResource BorderDarkBrush}" />
                                     </StackPanel>
                                 </Grid>
 

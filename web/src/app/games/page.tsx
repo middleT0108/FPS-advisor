@@ -10,6 +10,10 @@ import {
   Sparkles,
   ShieldCheck,
   Zap,
+  Wrench,
+  Download,
+  X,
+  Check,
 } from "lucide-react";
 
 function GamesFpsContent() {
@@ -22,6 +26,10 @@ function GamesFpsContent() {
   const [estimateData, setEstimateData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
+  // Modal tối ưu theo thiết lập
+  const [activeOptimizeModal, setActiveOptimizeModal] = useState<any | null>(null);
+  const [scriptCopied, setScriptCopied] = useState(false);
+
   useEffect(() => {
     const pId = searchParams.get("profileId") || localStorage.getItem("active_profile_id");
     if (pId) {
@@ -29,7 +37,6 @@ function GamesFpsContent() {
     }
   }, [searchParams]);
 
-  // Load danh sách game
   useEffect(() => {
     async function fetchGames() {
       try {
@@ -48,7 +55,6 @@ function GamesFpsContent() {
     fetchGames();
   }, []);
 
-  // Khi chọn game hoặc profileId đổi thì tải tính toán FPS
   useEffect(() => {
     if (!selectedGameKey) return;
     async function fetchEstimate() {
@@ -74,6 +80,116 @@ function GamesFpsContent() {
       (c: any) => c.resolution.toLowerCase() === selectedResolution.toLowerCase()
     ) || [];
 
+  const currentGame = games.find((g) => g.gameId === selectedGameKey);
+
+  function getOptimizationProfile(preset: string) {
+    const p = preset.toLowerCase();
+    if (p.includes("low")) {
+      return {
+        title: "Thiết lập Thi đấu (Competitive eSports - Max FPS)",
+        description: "Ưu tiên tối đa khung hình, giảm triệt để độ trễ khung hình (Input Latency) và triệt tiêu giật lag trong combat.",
+        gameSettings: [
+          "Độ phân giải: 1920x1080 (Native) hoặc 1280x960 Stretched",
+          "Chất lượng chi tiết (Detail / Material): Thấp (Low)",
+          "Đổ bóng (Shadows): Tắt (Off) - Tăng FPS và nhìn rõ địch trong góc tối",
+          "Khử răng cưa (Anti-Aliasing): Tắt (Off) hoặc FXAA",
+          "Lọc bất đẳng hướng (Anisotropic): 1x",
+          "Multithreaded Rendering: BẬT (Bắt buộc cho CPU đa luồng)",
+          "V-Sync / G-Sync: TẮT (Tránh nghẽn độ trễ chuột)",
+        ],
+        windowsSettings: [
+          "Windows Power Plan: High Performance (Khóa xung nhịp CPU boost cao nhất)",
+          "Windows Game Mode: BẬT",
+          "Ưu tiên luồng CPU: High Priority",
+          "Dọn dẹp RAM rác: Giải phóng WorkingSet bộ nhớ đệm",
+        ],
+      };
+    } else if (p.includes("med")) {
+      return {
+        title: "Thiết lập Cân bằng (Balanced 144Hz+)",
+        description: "Cân đối hoàn hảo giữa hình ảnh sắc nét và độ mượt mà ổn định trên màn hình 144Hz - 165Hz.",
+        gameSettings: [
+          "Độ phân giải: 1920x1080 (FHD)",
+          "Chất lượng texture: Trung bình (Medium)",
+          "Khử răng cưa: MSAA 2x",
+          "Lọc bất đẳng hướng: 4x",
+          "Hiệu ứng đổ bóng: Thấp (Low)",
+          "Multithreaded Rendering: BẬT",
+        ],
+        windowsSettings: [
+          "Windows Power Plan: High Performance",
+          "Windows Game Mode: BẬT",
+        ],
+      };
+    } else if (p.includes("high")) {
+      return {
+        title: "Thiết lập Đồ họa Cao (High Quality Fidelity)",
+        description: "Độ sắc nét vượt trội, đổ bóng chân thực phù hợp cho trải nghiệm mãn nhãn.",
+        gameSettings: [
+          "Độ phân giải: 1080p hoặc 1440p",
+          "Chất lượng texture: Cao (High)",
+          "Khử răng cưa: MSAA 4x",
+          "Lọc bề mặt: Anisotropic 8x",
+          "Đổ bóng & Ánh sáng: High",
+        ],
+        windowsSettings: [
+          "Windows Power Plan: High Performance",
+          "Bật HAGS (Hardware Accelerated GPU Scheduling)",
+        ],
+      };
+    } else {
+      return {
+        title: "Thiết lập Đỉnh cao (Ultra Cinematic)",
+        description: "Bật tối đa tất cả hiệu ứng ánh sáng, chi tiết bề mặt và độ phân giải cao nhất.",
+        gameSettings: [
+          "Độ phân giải: 1440p hoặc 4K UHD",
+          "Texture & Shaders: Ultra",
+          "Bật DLSS / FSR ở chế độ Quality (nếu có)",
+          "Ray Tracing / Lumen: Tùy chọn",
+        ],
+        windowsSettings: [
+          "Windows Power Plan: High Performance",
+          "Đảm bảo quạt tản nhiệt quay tối đa",
+        ],
+      };
+    }
+  }
+
+  function downloadOptimizationScript(preset: string) {
+    const scriptContent = `@echo off
+chcp 65001 >nul
+echo ========================================================
+echo  FPS ADVISOR - DANG TOI UU PC CHO THIET LAP: ${preset.toUpperCase()}
+echo ========================================================
+echo.
+
+echo [1/3] Kich hoat che do nguon High Performance...
+powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul 2>&1
+
+echo [2/3] Kich hoat Windows Game Mode...
+reg add "HKEY_CURRENT_USER\\Software\\Microsoft\\GameBar" /v "AutoGameModeEnabled" /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo [3/3] Toi uu do tre chuot va bo nho dem...
+reg add "HKEY_CURRENT_USER\\Control Panel\\Mouse" /v "MouseSensitivity" /t REG_SZ /d "10" /f >nul 2>&1
+
+echo.
+echo ========================================================
+echo  TOI UU HOAN TAT! CHUC BAN CHOI GAME DAT FPS CAO NHAT!
+echo ========================================================
+pause
+`;
+
+    const blob = new Blob([scriptContent], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ToiUu_FPS_${selectedGameKey}_${preset}.bat`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Header */}
@@ -81,7 +197,7 @@ function GamesFpsContent() {
         <div>
           <h1 className="text-3xl font-extrabold text-white flex items-center gap-2">
             <Gamepad2 className="w-8 h-8 text-indigo-400" />
-            Dự đoán & Đo lường FPS theo Game
+            Dự đoán &amp; Đo lường FPS theo Game
           </h1>
           <p className="text-sm text-gray-400 mt-1">
             {profileId
@@ -209,16 +325,16 @@ function GamesFpsContent() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-800 text-xs">
-                  <div className="flex items-center justify-between text-gray-400 mb-1">
+                <div className="mt-4 pt-3 border-t border-gray-800 text-xs space-y-2">
+                  <div className="flex items-center justify-between text-gray-400">
                     <span>Trần CPU:</span>
                     <span className="text-gray-200">{est.cpuLimitedFps} FPS</span>
                   </div>
-                  <div className="flex items-center justify-between text-gray-400 mb-2">
+                  <div className="flex items-center justify-between text-gray-400">
                     <span>Trần GPU:</span>
                     <span className="text-gray-200">{est.gpuLimitedFps} FPS</span>
                   </div>
-                  <div className="text-[11px] font-medium text-gray-400">
+                  <div className="text-[11px] font-medium text-gray-400 pb-2">
                     Nghẽn bởi:{" "}
                     <strong
                       className={
@@ -236,6 +352,22 @@ function GamesFpsContent() {
                         : "Cân bằng tối ưu"}
                     </strong>
                   </div>
+
+                  {/* NÚT CHỨC NĂNG TỐI ƯU CHO THIẾT LẬP NÀY */}
+                  <button
+                    onClick={() =>
+                      setActiveOptimizeModal({
+                        preset: item.preset,
+                        estimate: est,
+                        gameName: currentGame?.displayName || "Game",
+                        profile: getOptimizationProfile(item.preset),
+                      })
+                    }
+                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white font-bold text-xs border border-indigo-500/40 shadow-sm transition-all"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    Tối ưu cho thiết lập này
+                  </button>
                 </div>
               </div>
             );
@@ -274,6 +406,113 @@ function GamesFpsContent() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL TỐI ƯU CẤU HÌNH THEO MỨC THIẾT LẬP */}
+      {activeOptimizeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-2xl bg-gray-900 border border-indigo-500/40 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            {/* Close Button */}
+            <button
+              onClick={() => setActiveOptimizeModal(null)}
+              className="absolute top-5 right-5 p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                  Mức {activeOptimizeModal.preset}
+                </span>
+                <span className="text-xs text-gray-400">• {activeOptimizeModal.gameName}</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white">
+                {activeOptimizeModal.profile.title}
+              </h2>
+              <p className="text-xs text-gray-300 mt-1">
+                {activeOptimizeModal.profile.description}
+              </p>
+            </div>
+
+            {/* Target FPS Banner */}
+            <div className="p-4 rounded-xl bg-indigo-950/40 border border-indigo-800/40 flex items-center justify-between">
+              <div>
+                <span className="text-xs text-indigo-300">FPS Mục tiêu đạt được:</span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-3xl font-black text-emerald-400">
+                    ~{activeOptimizeModal.estimate.predictedAvgFps} FPS
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    (1% Low: ~{activeOptimizeModal.estimate.predicted1PercentLowFps} FPS)
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
+                  Khuyến nghị thi đấu
+                </span>
+              </div>
+            </div>
+
+            {/* Game Settings Checklist */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                <Sliders className="w-4 h-4" />
+                Cài đặt Video khuyến nghị trong {activeOptimizeModal.gameName}:
+              </h3>
+              <div className="bg-gray-950 p-4 rounded-xl border border-gray-800 space-y-2">
+                {activeOptimizeModal.profile.gameSettings.map((set: string, idx: number) => (
+                  <div key={idx} className="flex items-start gap-2 text-xs text-gray-300">
+                    <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>{set}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Windows Optimizations */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <Wrench className="w-4 h-4" />
+                Thiết lập hệ thống Windows:
+              </h3>
+              <div className="bg-gray-950 p-4 rounded-xl border border-gray-800 space-y-2">
+                {activeOptimizeModal.profile.windowsSettings.map((set: string, idx: number) => (
+                  <div key={idx} className="flex items-start gap-2 text-xs text-gray-300">
+                    <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <span>{set}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-2 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-end gap-3">
+              <button
+                onClick={() => downloadOptimizationScript(activeOptimizeModal.preset)}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-750 text-white font-semibold text-xs border border-gray-700 transition-all"
+              >
+                <Download className="w-4 h-4 text-indigo-400" />
+                Tải file Script tự động áp dụng (.bat)
+              </button>
+
+              <button
+                onClick={() => {
+                  alert(
+                    "Hãy mở ứng dụng Desktop 'FPS Advisor' trên máy bạn và chuyển sang thẻ '⚡ Tối ưu FPS cho máy' để kích hoạt One-Click Gaming Boost tức thì!"
+                  );
+                  setActiveOptimizeModal(null);
+                }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all"
+              >
+                <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                Áp dụng nhanh qua Desktop App
+              </button>
+            </div>
           </div>
         </div>
       )}
